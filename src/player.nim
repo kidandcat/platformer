@@ -137,9 +137,6 @@ method onCollide*(player: Player, target: Entity) =
     target.dead = true
     discard sfxData["box"].play()
 
-  if "bridge" in target.tags:
-    discard # TODO make player stop
-
   if "finish" in target.tags:
     if not player.won:
       discard sfxData["victory"].play()

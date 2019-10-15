@@ -2,8 +2,6 @@ import
   nimgame2 / [
     assets,
     entity,
-    font,
-    graphic,
     gui/button,
     gui/widget,
     input,
@@ -15,20 +13,13 @@ import
     types,
   ],
   data,
-  enemy,
   level,
   player
 
 
 const
-  
   PlayerLayer = 10
   UILayer = 20
-  Spikes = 4  # Spikes tile index
-  CoinA = 2   # Coin tile index (frame A)
-  CoinB = 3   # Coin tile index (frame B)
-  EnemySpawn = 9  # Enemy spawn tile index
-  Finish = 11     # Finish tile index
 
 
 type
@@ -77,16 +68,6 @@ proc init*(scene: MainScene) =
   scene.bg.parent = scene.camera
   scene.add scene.bg
 
-  # bridge
-  for tileCoord in scene.level.tileIndex(82):
-    let e = newEntity()
-    e.tags.add "bridge"
-    e.pos = scene.level.tilePos(tileCoord)
-    e.collider = newLineCollider(e, (0, TileDim[1]), (TileDim[0], TileDim[1]))
-    e.collider.tags.add "player" # collide only with player entity
-    e.parent = scene.camera
-    scene.add e
-
   # Enemy
   # for tileCoord in scene.level.tileIndex(EnemySpawn):
   #   let e = newEnemy(gfxData["enemy"], scene.level)
@@ -125,6 +106,17 @@ proc init*(scene: MainScene) =
 
   scene.cameraBond = scene.player # bind camera to the player entity
   scene.player.updateVisibility()
+
+  # bridge
+  for tileCoord in scene.level.tileIndex(82):
+    let e = newEntity()
+    e.tags.add "bridge"
+    e.pos = scene.level.tilePos(tileCoord)
+    e.collider = newLineCollider(e, (0, 0), (TileDim[0], 0))
+    e.collider.tags.add "player" # collide only with player entity
+    e.parent = scene.camera
+    scene.add e
+    scene.player.collisionEnvironment.add e # make player collide with this
 
 
 proc free*(scene: MainScene) =
