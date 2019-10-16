@@ -8,7 +8,9 @@ import
     types,
   ],
   data,
-  level
+  level,
+  network,
+  json
 
 
 const
@@ -17,15 +19,17 @@ const
   PlayerRadius = 8
   PlayerSize = PlayerRadius * 2
   ColliderRadius = PlayerRadius - 1
-  GravAcc = 1000
-  Drag = 5000
-  JumpVel = 350
-  MaxVel = 220
+  GravAcc = 800
+  Drag = 2000
+  JumpVel = 250
+  MaxVel = 150
 
 
 type
   Player* = ref object of Entity
     level*: Level
+    looking*: string
+    animation*: string
     dying: bool
     won*: bool
     requestCoins*: seq[CoordInt]
@@ -74,8 +78,6 @@ proc init*(player: Player, graphic: TextureGraphic, level: Level) =
   player.drg.x = Drag
   player.physics = platformerPhysics
 
-  player.requestCoins = @[]
-
 
 proc newPlayer*(graphic: TextureGraphic, level: Level): Player =
   new result
@@ -87,6 +89,7 @@ proc jump*(player: Player) =
   if player.vel.y == 0.0:
     player.vel.y -= JumpVel
     discard sfxData["jump"].play()
+    player.animation = "jump"
 
 
 proc right*(player: Player, elapsed: float) =
@@ -94,6 +97,8 @@ proc right*(player: Player, elapsed: float) =
   player.vel.x = MaxVel
   if not player.sprite.playing and player.vel.y == 0.0:
     player.play("right", 1)
+    player.looking = "right"
+    player.animation = "right"
 
 
 proc left*(player: Player, elapsed: float) =
@@ -101,6 +106,8 @@ proc left*(player: Player, elapsed: float) =
   player.vel.x = -MaxVel
   if not player.sprite.playing and player.vel.y == 0.0:
     player.play("left", 1)
+    player.looking = "left"
+    player.animation = "left"
 
 
 proc die*(player: Player) =
@@ -109,34 +116,27 @@ proc die*(player: Player) =
     player.play("death", 3)
     player.vel.y = -JumpVel
     discard sfxData["death"].play()
+    player.animation = "death"
 
 
+var lastData : JsonNode
 method update*(player: Player, elapsed: float) =
   player.updateEntity elapsed
   player.updateVisibility()
 
-  if player.dying:
-    if not player.sprite.playing:
-      # reset
-      player.play("right", 0)
-      player.resetPosition()
-      player.updateVisibility()
-      player.dying = false
-    else:
-      return
+  var d = %*{
+    "x": int(player.pos.x),
+    "y": int(player.pos.y),
+    "looking": player.looking,
+    "playing": player.sprite.playing,
+    "animation": player.animation
+  }
+  if d != lastData:
+    lastData = d
+    discard send($d)
 
 
 method onCollide*(player: Player, target: Entity) =
-  if "spikes" in target.tags or "enemy" in target.tags:
-    player.die()
-
-  if "box" in target.tags:
-    let index = player.level.tileIndex(target.pos)
-    player.level.tile(index) += 1 # red box -> grey box
-    player.requestCoins.add index + (0, -1) # request coin spawn one tile higher
-    target.dead = true
-    discard sfxData["box"].play()
-
   if "finish" in target.tags:
     if not player.won:
       discard sfxData["victory"].play()

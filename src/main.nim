@@ -14,7 +14,9 @@ import
   ],
   data,
   level,
-  player
+  player,
+  network,
+  asyncdispatch
 
 
 const
@@ -27,6 +29,7 @@ type
     level: Level
     bg: Level
     player: Player
+    others: seq[Player]
     score: TextGraphic
     victory: Entity
 
@@ -47,6 +50,7 @@ proc spawnCoin*(scene: MainScene, index: CoordInt) =
 
 proc init*(scene: MainScene) =
   init Scene scene
+  waitFor connect()
 
   # Camera
   scene.camera = newEntity()
@@ -147,17 +151,10 @@ method event*(scene: MainScene, event: Event) =
 
 method update*(scene: MainScene, elapsed: float) =
   scene.updateScene elapsed
-  if ScancodeUp.pressed:
+  if ScancodeSpace.pressed:
     scene.player.jump()
   if ScancodeRight.down:
     scene.player.right(elapsed)
   if ScancodeLeft.down:
     scene.player.left(elapsed)
-
-  # Update score
-  #  scene.score.setText "SCORE: " & $score
-
-  # Check for victory
-  # if scene.player.won:
-  #   scene.victory.visible = true
 
