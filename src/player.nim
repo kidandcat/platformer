@@ -27,6 +27,7 @@ const
 
 type
   Player* = ref object of Entity
+    name*: string
     level*: Level
     looking*: string
     animation*: string
@@ -79,8 +80,9 @@ proc init*(player: Player, graphic: TextureGraphic, level: Level) =
   player.physics = platformerPhysics
 
 
-proc newPlayer*(graphic: TextureGraphic, level: Level): Player =
+proc newPlayer*(name: string, graphic: TextureGraphic, level: Level): Player =
   new result
+  result.name = name
   result.init(graphic, level)
 
 
@@ -125,6 +127,7 @@ method update*(player: Player, elapsed: float) =
   player.updateVisibility()
 
   var d = %*{
+    "name": player.name,
     "x": int(player.pos.x),
     "y": int(player.pos.y),
     "looking": player.looking,
@@ -133,8 +136,7 @@ method update*(player: Player, elapsed: float) =
   }
   if d != lastData:
     lastData = d
-    discard send($d)
-
+    discard send(d)
 
 method onCollide*(player: Player, target: Entity) =
   if "finish" in target.tags:

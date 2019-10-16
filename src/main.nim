@@ -33,6 +33,7 @@ type
     score: TextGraphic
     victory: Entity
 
+var playerName*: string
 
 proc spawnCoin*(scene: MainScene, index: CoordInt) =
   let e = newEntity()
@@ -101,7 +102,7 @@ proc init*(scene: MainScene) =
   scene.add scene.victory
 
   # Player
-  scene.player = newPlayer(gfxData["arcade"], scene.level)
+  scene.player = newPlayer(playerName, gfxData["arcade"], scene.level)
   scene.player.collisionEnvironment = @[Entity(scene.level)]
   scene.player.layer = PlayerLayer
   scene.player.resetPosition()

@@ -5,6 +5,7 @@ import
     font,
     gui/button,
     gui/widget,
+    gui/textinput,
     input,
     mosaic,
     nimgame,
@@ -14,16 +15,22 @@ import
     texturegraphic,
     types,
   ],
-  data
+  data,
+  main,
+  strutils
 
 
 type
   TitleScene = ref object of Scene
 
+var
+  btnPlay, btnExit: GuiButton
+  btnPlayLabel, btnExitLabel: TextGraphic
+  nameInput: GuiTextInput
+
 
 # Play action procedure
 proc play(widget: GuiWidget) =
-  echo "Play"
   game.scene = mainScene
 
 
@@ -33,21 +40,22 @@ proc exit(widget: GuiWidget) =
 
 
 proc init*(scene: TitleScene) =
-  echo "Title init"
   init Scene(scene)
 
-  # Create menu buttons
-  var
-    btnPlay, btnExit: GuiButton
-    btnPlayLabel, btnExitLabel: TextGraphic
+  # Name input
+  nameInput = newGuiTextInput(inputSkin, defaultFont)
+  nameInput.pos = (GameWidth / 2 - (8 * 9), GameHeight / 2)
+  nameInput.text.limit = 16 # set text length limit
+  scene.add nameInput
 
   # Play button
   btnPlayLabel = newTextGraphic defaultFont
   btnPlayLabel.setText "PLAY"
   btnPlay = newGuiButton(buttonSkin, btnPlayLabel)
   btnPlay.centrify()
-  btnPlay.pos = (GameWidth / 2, GameHeight / 2)
+  btnPlay.pos = (GameWidth / 2, GameHeight / 2 + 60)
   btnPlay.actions.add play # assign the action procedure
+  btnPlay.disable
   scene.add btnPlay
 
   # Exit button
@@ -55,7 +63,7 @@ proc init*(scene: TitleScene) =
   btnExitLabel.setText "EXIT"
   btnExit = newGuiButton(buttonSkin, btnExitLabel)
   btnExit.centrify()
-  btnExit.pos = (GameWidth / 2, GameHeight / 2 + 64)
+  btnExit.pos = (GameWidth / 2, GameHeight / 2 + 88)
   btnExit.actions.add exit # assign the action procedure
   scene.add btnExit
 
@@ -84,10 +92,12 @@ method show*(scene: TitleScene) =
 
 method event*(scene: TitleScene, event: Event) =
   scene.eventScene event
-  if event.kind == KeyDown:
-    case event.key.keysym.sym:
-    of K_Space, K_Return:
-      game.scene = mainScene # quick start
+  if event.kind == KeyUp:
+    playerName = nameInput.text.text # playerName is on main
+    playerName.removeSuffix("|")
+    if nameInput.text.text.len <= 3:
+      btnPlay.disable
     else:
-      discard
+      btnPlay.enable
+    
 

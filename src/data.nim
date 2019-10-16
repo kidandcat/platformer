@@ -24,6 +24,8 @@ var
   sfxData*: Assets[Sound]
   buttonMosaic*: Mosaic
   buttonSkin*: TextureGraphic
+  inputMosaic*: Mosaic
+  inputSkin*: TextureGraphic
   score*: int
 
 
@@ -46,7 +48,12 @@ proc loadData*() =
   buttonMosaic = newMosaic("data/gui/button.png", (8, 8))
   buttonSkin = newTextureGraphic()
   discard buttonSkin.assignTexture buttonMosaic.render(
-    patternStretchBorder(4, 2))
+    patternStretchBorder(8, 1))
+
+  inputMosaic = newMosaic("data/gui/button.png", (8, 8))
+  inputSkin = newTextureGraphic()
+  discard inputSkin.assignTexture inputMosaic.render(
+    patternStretchBorder(16, 1))
 
 
 proc freeData*() =
@@ -58,4 +65,6 @@ proc freeData*() =
     sound.free()
   buttonSkin.free()
   buttonMosaic.free()
+  inputMosaic.free()
+  inputSkin.free()
 
