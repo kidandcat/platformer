@@ -15,7 +15,6 @@ import
   tables
 
 var thread: Thread[void]
-var syncEntities: Table[string, Npc]
 
 game = newGame()
 if game.init(GameWidth, GameHeight, title = GameTitle, integerScale = true):

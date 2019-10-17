@@ -10,11 +10,8 @@ proc cb(req: Request) {.async, gcsafe.} =
       connections.add ws
       while ws.readyState == Open:
         let packet = await ws.receiveStrPacket()
-        echo packet
-        echo "connections length " & $connections.len
         for other in connections:
-          if other.readyState == Open:
-            echo "send to other " & packet
+          if other.readyState == Open and ws != other:
             asyncCheck other.send(packet)
     except IOError, WebSocketError:
       echo "socket closed"
