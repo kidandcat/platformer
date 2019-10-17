@@ -7,8 +7,15 @@ import
   ],
   data,
   title,
-  main
+  main,
+  network,
+  asyncdispatch,
+  threadpool,
+  npc,
+  tables
 
+var thread: Thread[void]
+var syncEntities: Table[string, Npc]
 
 game = newGame()
 if game.init(GameWidth, GameHeight, title = GameTitle, integerScale = true):
@@ -29,5 +36,7 @@ if game.init(GameWidth, GameHeight, title = GameTitle, integerScale = true):
 
   # Run
   game.scene = titleScene # Initial scene
-  run game # Let's go!
 
+  thread.createThread connect
+
+  run game # Let's go!

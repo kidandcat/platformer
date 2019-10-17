@@ -10,7 +10,9 @@ import
   data,
   level,
   network,
-  json
+  json,
+  asyncDispatch,
+  chan
 
 
 const
@@ -122,21 +124,25 @@ proc die*(player: Player) =
 
 
 var lastData : JsonNode
+var delta = 0.0
 method update*(player: Player, elapsed: float) =
   player.updateEntity elapsed
   player.updateVisibility()
 
-  var d = %*{
-    "name": player.name,
-    "x": int(player.pos.x),
-    "y": int(player.pos.y),
-    "looking": player.looking,
-    "playing": player.sprite.playing,
-    "animation": player.animation
-  }
-  if d != lastData:
-    lastData = d
-    discard send(d)
+  delta += elapsed
+  if delta > 0.1:
+    delta = 0.0
+    var d = %*{
+      "name": player.name,
+      "x": int(player.pos.x),
+      "y": int(player.pos.y),
+      "looking": player.looking,
+      "playing": player.sprite.playing,
+      "animation": player.animation
+    }
+    if d != lastData:
+      lastData = d
+      toNetwork.send $d
 
 method onCollide*(player: Player, target: Entity) =
   if "finish" in target.tags:

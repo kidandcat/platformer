@@ -16,7 +16,9 @@ import
   level,
   player,
   network,
-  asyncdispatch
+  threadpool,
+  npc,
+  chan
 
 
 const
@@ -35,6 +37,9 @@ type
 
 var playerName*: string
 
+
+
+
 proc spawnCoin*(scene: MainScene, index: CoordInt) =
   let e = newEntity()
   e.tags.add "coin"
@@ -51,7 +56,6 @@ proc spawnCoin*(scene: MainScene, index: CoordInt) =
 
 proc init*(scene: MainScene) =
   init Scene scene
-  waitFor connect()
 
   # Camera
   scene.camera = newEntity()
@@ -158,4 +162,8 @@ method update*(scene: MainScene, elapsed: float) =
     scene.player.right(elapsed)
   if ScancodeLeft.down:
     scene.player.left(elapsed)
+
+  let (data, msg) = tryRecv fromNetwork
+  if data:
+    echo "fromNetwork " & msg
 
