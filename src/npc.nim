@@ -8,7 +8,6 @@ import
     types,
   ],
   data,
-  level,
   json
 
 
@@ -34,6 +33,9 @@ proc updatePos*(npc: Npc, pos: JsonNode) =
   echo "update pos " & npc.name
   npc.pos.x = pos["x"].getFloat
   npc.pos.y = pos["y"].getFloat
+  if pos["playing"].getBool:
+    npc.play(pos["animation"].getStr, 1)
+
 
 method update*(npc: Npc, elapsed: float) =
   npc.updateEntity elapsed

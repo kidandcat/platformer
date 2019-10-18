@@ -57,10 +57,13 @@ proc init*(player: Player, graphic: TextureGraphic, level: Level) =
   player.tags.add "player"
   player.level = level
   player.graphic = graphic
-  player.initSprite((PlayerSize, PlayerSize), (PlayerSize * 6, 0))
+  player.initSprite((PlayerSize, PlayerSize), (PlayerSize * 9, 0))
+  discard player.addAnimation("standLeft", [0], 1/12)
+  discard player.addAnimation("standRight", [0], 1/12, Flip.horizontal)
   discard player.addAnimation("right", [0, 1, 2], 1/12, Flip.horizontal)
   discard player.addAnimation("left", [0, 1, 2], 1/12)
-  discard player.addAnimation("death", [2], 1/12)
+  discard player.addAnimation("jumpLeft", [3], 4/12)
+  discard player.addAnimation("jumpRight", [3], 4/12, Flip.horizontal)
 
   # collider
   let c = newGroupCollider(player)
@@ -92,8 +95,13 @@ proc jump*(player: Player) =
   if player.dying: return
   if player.vel.y == 0.0:
     player.vel.y -= JumpVel
+    if player.looking == "left":
+      player.play("jumpLeft", 1)
+      player.animation = "jumpLeft"
+    else:
+      player.play("jumpRight", 1)
+      player.animation = "jumpRight"
     discard sfxData["jump"].play()
-    player.animation = "jump"
 
 
 proc right*(player: Player, elapsed: float) =
@@ -103,6 +111,10 @@ proc right*(player: Player, elapsed: float) =
     player.play("right", 1)
     player.looking = "right"
     player.animation = "right"
+  elif player.looking != "right":
+    player.looking = "right"
+    player.animation = "jumpRight"
+    player.play("jumpRight", 1)
 
 
 proc left*(player: Player, elapsed: float) =
@@ -112,15 +124,10 @@ proc left*(player: Player, elapsed: float) =
     player.play("left", 1)
     player.looking = "left"
     player.animation = "left"
-
-
-proc die*(player: Player) =
-  if not player.dying:
-    player.dying = true
-    player.play("death", 3)
-    player.vel.y = -JumpVel
-    discard sfxData["death"].play()
-    player.animation = "death"
+  elif player.looking != "left":
+    player.looking = "left"
+    player.animation = "jumpLeft"
+    player.play("jumpLeft", 1)
 
 
 var lastData : JsonNode
@@ -128,6 +135,14 @@ var delta = 0.0
 method update*(player: Player, elapsed: float) =
   player.updateEntity elapsed
   player.updateVisibility()
+
+  if player.vel.y == 0 and (player.animation == "jumpLeft" or player.animation == "jumpRight"):
+    if player.looking == "left":
+      player.animation = "standLeft"
+      player.play("standLeft", 1)
+    else:
+      player.animation = "standRight"
+      player.play("standRight", 1)
 
   delta += elapsed
   if delta > 0.1:
