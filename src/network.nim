@@ -1,10 +1,4 @@
-import nimgame2 / [
-    nimgame,
-    settings,
-    types,
-    scene
-  ],
-  ws, asyncdispatch, asynchttpserver, json, npc, tables, threadpool, chan
+import ws, asyncdispatch, json, chan
 
 const UPDATE_FREQ* = 1.0
 var socket {.threadvar.}: WebSocket
@@ -24,7 +18,7 @@ proc sendLoop() {.async.} =
       break
 
 proc connect*() {.thread.} =
-  socket = waitFor newWebSocket("ws://127.0.0.1:9001/ws")
+  socket = waitFor newWebSocket("ws://galax.be:9001/ws")
   open toNetwork
   open fromNetwork
   asyncCheck recvLoop()
