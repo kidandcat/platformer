@@ -20,9 +20,9 @@ const
   Spawn = 93 # player spawn selector tile index
   PlayerRadius = 8
   PlayerSize = PlayerRadius * 2
-  ColliderRadius = PlayerRadius - 1
-  GravAcc = 800
-  Drag = 2000
+  ColliderRadius* = PlayerRadius - 1
+  GravAcc* = 800
+  Drag* = 2000
   JumpVel = 250
   MaxVel = 150
 
@@ -73,11 +73,6 @@ proc init*(player: Player, graphic: TextureGraphic, level: Level) =
     player,
     (PlayerRadius, PlayerRadius),
     ColliderRadius)
-  # 2nd collider
-  c.list.add newBoxCollider(
-    player,
-    (PlayerRadius, PlayerRadius + PlayerRadius div 2),
-    (PlayerSize - 2, ColliderRadius))
 
   # physics
   player.acc.y = GravAcc
@@ -130,7 +125,6 @@ proc left*(player: Player, elapsed: float) =
     player.play("jumpLeft", 1)
 
 
-var lastData : JsonNode
 var delta = 0.0
 method update*(player: Player, elapsed: float) =
   player.updateEntity elapsed
@@ -147,17 +141,15 @@ method update*(player: Player, elapsed: float) =
   delta += elapsed
   if delta > 0.1:
     delta = 0.0
-    var d = %*{
+    toNetwork.send($ %*{
       "name": player.name,
       "x": int(player.pos.x),
       "y": int(player.pos.y),
       "looking": player.looking,
       "playing": player.sprite.playing,
       "animation": player.animation
-    }
-    if d != lastData:
-      lastData = d
-      toNetwork.send $d
+    })
+      
 
 method onCollide*(player: Player, target: Entity) =
   if "finish" in target.tags:

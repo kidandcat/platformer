@@ -8,7 +8,8 @@ import
     types,
   ],
   data,
-  json
+  json,
+  player
 
 
 const
@@ -31,11 +32,29 @@ proc init*(npc: Npc) =
   discard npc.addAnimation("left", [0, 1, 2], 1/12)
   discard npc.addAnimation("jumpLeft", [3], 4/12)
   discard npc.addAnimation("jumpRight", [3], 4/12, Flip.horizontal)
+  npc.physics = platformerPhysics
+  # collider
+  let c = newGroupCollider(npc)
+  npc.collider = c
+  # 1st collider
+  c.list.add newCircleCollider(
+    npc,
+    (PlayerRadius, PlayerRadius),
+    ColliderRadius)
 
 proc updatePos*(npc: Npc, pos: JsonNode) =
-  echo "update pos " & npc.name
-  npc.pos.x = pos["x"].getFloat
-  npc.pos.y = pos["y"].getFloat
+  var oldPos = (npc.pos.x, npc.pos.y)
+  var newPos =(pos["x"].getFloat, pos["y"].getFloat)
+
+  var dir = newPos - oldPos
+  # var modulo = sqrt(dir[0]^2 + dir[1]^2)
+  # var normDir = dir / modulo
+
+  npc.vel.x = dir[0] * 10
+  npc.vel.y = dir[1] * 10
+ 
+  echo dir[0], dir[1]
+
   if pos["playing"].getBool:
     npc.play(pos["animation"].getStr, 1)
 

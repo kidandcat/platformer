@@ -166,17 +166,15 @@ method update*(scene: MainScene, elapsed: float) =
 
   let (data, msg) = tryRecv fromNetwork
   if data:
-    echo "fromNetwork " & msg
     var jn = parseJson msg
     if syncEntities.hasKey jn["name"].getStr:
-      echo "update npc " & jn["name"].getStr
-      syncEntities[jn["name"].getStr].pos.x = jn["x"].getFloat
-      syncEntities[jn["name"].getStr].pos.y = jn["y"].getFloat
+      syncEntities[jn["name"].getStr].updatePos jn
     else:
-      echo "New player " & jn["name"].getStr
       var n = new Npc
       n.name = jn["name"].getStr
       n.init
       n.parent = scene.camera
       syncEntities[n.name] = n
       scene.add n
+      scene.player.collisionEnvironment.add n
+      n.collisionEnvironment.add scene.player
